@@ -1,0 +1,55 @@
+/* =========================================================
+   ⚠️ WARNING:
+   This script will DROP the existing 'datawarehouse' 
+   database if it already exists.
+   All data inside the database will be permanently lost.
+   Use with caution.
+   ========================================================= */
+
+USE master;
+GO
+
+-- Check if database exists and drop it
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'datawarehouse')
+BEGIN
+    PRINT 'Database "datawarehouse" already exists. Dropping database...';
+    DROP DATABASE datawarehouse;
+END
+ELSE
+BEGIN
+    PRINT 'Database "datawarehouse" does not exist. Creating new database...';
+END
+GO
+
+-- Create the Data Warehouse database
+CREATE DATABASE datawarehouse;
+GO
+
+-- Switch to the Data Warehouse database
+USE datawarehouse;
+GO
+
+/* =========================================================
+   Creating Schemas for Medallion Architecture
+   Bronze  - Raw data
+   Silver  - Cleaned & transformed data
+   Gold    - Analytics & reporting layer
+   ========================================================= */
+
+-- Create Bronze schema
+
+    CREATE SCHEMA Bronze;
+
+
+
+-- Create Silver schema
+GO
+    CREATE SCHEMA Silver;
+    
+
+
+-- Create Gold schema
+GO
+    CREATE SCHEMA Gold;
+  
+

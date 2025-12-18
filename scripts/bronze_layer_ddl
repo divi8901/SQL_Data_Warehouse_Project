@@ -1,0 +1,82 @@
+/*
+Script Purpose:
+    This stored procedure loads data into the 'bronze' schema from external CSV files. 
+    It performs the following actions:
+    - Truncates the bronze tables before loading data.
+    - Uses the `BULK INSERT` command to load data from csv Files to bronze tables.
+    */
+
+
+USE datawarehouse;
+GO
+
+if object_id ('bronze.crm_cust_info' , 'u') IS NOT NULL
+    DROP TABLE bronze.crm_cust_info;
+
+create table Bronze.crm_cust_info(
+cst_id int,
+cst_key nvarchar(50),
+cst_firstname nvarchar(50),
+cst_lastname nvarchar(50),
+cst_matrial_status nvarchar(50),
+cst_gender nvarchar(50),
+cst_create_date date
+);
+
+if object_id ('Bronze.crm_prd_info' , 'u') IS NOT NULL
+    DROP TABLE Bronze.crm_prd_info;
+create table Bronze.crm_prd_info(
+prd_id int,
+prd_key nvarchar(50),
+prd_nm nvarchar(50),
+prd_cost int,
+prd_line nvarchar(50),
+prd_start_dt date,
+prd_end_date date
+);
+
+if object_id ('Bronze.crm_sales_details' , 'u') IS NOT NULL
+    DROP TABLE Bronze.crm_sales_details;
+CREATE TABLE Bronze.crm_sales_details
+(
+    sls_ord_num    NVARCHAR(50)  ,
+    sls_prd_key    NVARCHAR(50)  , 
+    sls_cust_id    INT  ,       
+
+    sls_order_dt   NVARCHAR(50) ,      
+    sls_ship_dt    NVARCHAR(50) ,        
+    sls_due_dt     NVARCHAR(50) ,        
+
+    sls_sales      DECIMAL(18,2),
+    sls_quantity   INT        ,
+    sls_price      DECIMAL(18,2) 
+);
+
+if object_id ('Bronze.erp_loc_a101' , 'u') IS NOT NULL
+    DROP TABLE Bronze.erp_loc_a101;
+CREATE TABLE Bronze.erp_loc_a101
+(
+    cid NVARCHAR(50),
+    cntry NVARCHAR(50)
+);
+
+if object_id ('Bronze.erp_cust_az12' , 'u') IS NOT NULL
+    DROP TABLE Bronze.erp_cust_az12;
+CREATE TABLE Bronze.erp_cust_az12
+(
+cid NVARCHAR(50),
+bdate DATE,
+gen NVARCHAR(50)
+);
+
+if object_id ('Bronze.erp_px_cat_glv2' , 'u') IS NOT NULL
+    DROP TABLE Bronze.erp_px_cat_g1v2;
+CREATE TABLE Bronze. erp_px_cat_g1v2
+(
+id  NVARCHAR(50),
+cat NVARCHAR(50),
+subcat NVARCHAR(50),
+maintenance NVARCHAR(50)
+);
+
+

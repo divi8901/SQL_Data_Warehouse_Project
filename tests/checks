@@ -1,0 +1,84 @@
+-- check for nulls or duplicate in pKey
+USE datawarehouse;
+GO
+
+select 
+prd_id,
+count(*)
+from Bronze.crm_prd_info
+group by prd_id
+having count(*) > 1 or prd_id is null 
+
+-- checking the unwanted spaced in the string in f.name and l.name
+select 
+cst_firstname
+from Bronze.crm_cust_info
+where cst_firstname != TRIM(cst_firstname)
+
+-- data standradisation and consistency
+--  we want M show male and F show - Female
+select 
+cst_gender
+from Bronze.crm_cust_info            
+ -- Similary do for MATRIAL status
+
+ -- checking nummber --- replace by 0
+ select
+ prd_cost
+ from bronze.crm_prd_info
+ where prd_cost < 0 or prd_cost is null 
+
+ -- check for invalid date order
+ -- if end date overlap with start date we subtract -1 from next start date to do not over lap 
+ -- and latest start may have null end end showing that process is going on 
+ select *
+ from bronze.crm_prd_info
+ where prd_end_date < prd_start_dt or prd_start_dt is null
+
+ SELECT *,
+       DATEADD(day, -1,                     -- --> ensuring end date is day before next start date  
+           LEAD(prd_start_dt) OVER (
+               PARTITION BY prd_key
+               ORDER BY prd_start_dt
+           )
+       ) AS prd_end_tst
+FROM bronze.crm_prd_info
+WHERE prd_key IN ('CL-JE-LJ-0192-S', 'CL-JE-LJ-0192-X');
+
+ select * from silver.crm_prd_info
+
+ -- checking invalid date
+ SELECT
+    TRY_CONVERT(DATE,
+        NULLIF(LTRIM(RTRIM(sls_order_dt)), '0')
+    ) AS sls_order_dt
+FROM bronze.crm_sales_details;
+       ---------- checking it have  null values
+
+       -- checking sales price
+
+SELECT
+    sls_sales,
+    sls_quantity,
+    sls_price,
+    cast(
+    case when  sls_sales is null or  sls_sales <= 0 or  sls_sales!= sls_quantity * abs(sls_price)
+        then sls_quantity * abs(sls_price)
+       
+    end 
+     AS DECIMAL(10,2)
+     ) as sls_sales_new,
+
+     cast(
+     case when sls_price is null or sls_price<=0
+        then sls_sales / nullif(sls_quantity,0)
+    else sls_price
+    end
+
+     AS DECIMAL(10,2)
+     )as sls_price_new
+FROM bronze.crm_sales_details
+where  sls_sales is null or  sls_sales <=0 
+
+  
+   

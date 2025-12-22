@@ -55,3 +55,6 @@ The main objectives of this project are:
 👤 About Me
 I am a Data Analyst / Data Science undergraduate with a strong interest in SQL, data analytics, and data engineering.
 I enjoy working with real-world datasets to extract insights and build scalable analytical solutions.
+
+## I have done done this project throuh guidance : 
+Thanks to @DataWithBaraa for guidance.

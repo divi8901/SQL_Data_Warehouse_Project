@@ -1,0 +1,76 @@
+
+
+ -- >> joining tables to get all customer details 
+
+ if object_id('gold.dim_customer' , 'V') is not null
+	drop view  gold.dim_customer;
+
+create view gold.dim_customer as
+select 
+row_number()over(order by cst_id) as customer_key,
+	cst_id ,
+	cst_key ,
+	cst_firstname ,
+	cst_lastname,
+	cst_matrial_status,
+	case 
+		when ci.cst_gender != 'n/a' then ci.cst_gender          --->> it is master table 
+		else coalesce(ca.gen, 'n/a')
+	end as gen,
+	ca.bdate,
+	la.cntry
+from silver.crm_cust_info ci
+left join silver.erp_cust_az12 ca
+on ci.cst_key = ca.cid
+left join silver.erp_loc_a101 la
+on ci.cst_key = la.cid                             
+
+
+print('------------ products details ----------------')
+
+ if object_id('gold.dim_product' , 'V') is not null
+	drop view  gold.dim_product;
+
+create view gold.dim_product as
+
+select 
+row_number()over(order by pn.prd_start_dt , pn.prd_key) as product_key,
+prd_id as product_id,
+cat_id as category_id,
+prd_key as product_number,
+prd_nm as product_name,
+pc.cat,
+pc.subcat,
+prd_cost as product_cost,
+prd_line as product_line,
+pc.maintenance,
+prd_start_dt as product_strt_date,
+prd_end_date as product_end_date
+from silver.crm_prd_info pn
+left join silver.erp_px_cat_g1v2 pc 
+on pn.cat_id = pc.id
+where prd_end_date is NULL          --->> to get the current product 
+
+
+print('-------------- sales details -------------')
+
+ if object_id('gold.fact_sales' , 'V') is not null
+	drop view  gold.fact_sales;
+
+
+create view gold.fact_sales as
+SELECT
+    sd.sls_ord_num as order_num,
+    pr.product_key,
+    cu.customer_key,
+    sd.sls_order_dt as order_date,
+    sd.sls_ship_dt as shipping_date,
+    sd.sls_due_dt as due_date,
+    sd.sls_sales as sales,
+    sd.sls_quantity as quantity,
+    sd.sls_price as price
+FROM silver.crm_sales_details sd
+LEFT JOIN gold.dim_product pr
+    ON sd.sls_prd_key = pr.product_number
+LEFT JOIN gold.dim_customer cu
+    ON sd.sls_cust_id = cst_id
